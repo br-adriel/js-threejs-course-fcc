@@ -16,7 +16,7 @@ const aspect = width / height;
 const near = 0.1;
 const far = 1000;
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-camera.position.z = 2;
+camera.position.z = 5;
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
@@ -35,6 +35,13 @@ const earthMesh = new THREE.Mesh(geometry, material);
 earthGroup.add(earthMesh);
 scene.add(earthGroup);
 
+const lightsMaterial = new THREE.MeshBasicMaterial({
+  map: loader.load('/textures/03_earthlights1k.jpg'),
+  blending: THREE.AdditiveBlending,
+});
+const lightMesh = new THREE.Mesh(geometry, lightsMaterial);
+earthGroup.add(lightMesh);
+
 const stars = getStarfield({ numStars: 2000 });
 scene.add(stars);
 
@@ -42,9 +49,11 @@ const sunlight = new THREE.DirectionalLight(0xffffff);
 sunlight.position.set(-2, -0.5, 1.5);
 scene.add(sunlight);
 
-function animate(t = 0) {
+const rotationYIncrease = 0.002;
+function animate() {
   requestAnimationFrame(animate);
-  earthMesh.rotation.y += 0.002;
+  earthMesh.rotation.y += rotationYIncrease;
+  lightMesh.rotation.y += rotationYIncrease;
   renderer.render(scene, camera);
   controls.update();
 }
