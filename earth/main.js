@@ -1,19 +1,20 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
+import getStarfield from './utils/stars';
 
-const w = window.innerWidth;
-const h = window.innerHeight;
+const width = window.innerWidth;
+const height = window.innerHeight;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(w, h);
+renderer.setSize(width, height);
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 
 const fov = 75;
-const aspect = w / h;
+const aspect = width / height;
 const near = 0.1;
-const far = 10;
+const far = 1000;
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 camera.position.z = 2;
 
@@ -24,7 +25,7 @@ controls.dampingFactor = 0.03;
 const loader = new THREE.TextureLoader();
 const geometry = new THREE.IcosahedronGeometry(1, 12);
 const material = new THREE.MeshStandardMaterial({
-  map: loader.load('./textures/00_earthmap1k.jpg'),
+  map: loader.load('/textures/00_earthmap1k.jpg'),
 });
 
 const earthGroup = new THREE.Group();
@@ -32,11 +33,14 @@ earthGroup.rotation.z = (-23.4 * Math.PI) / 180;
 
 const earthMesh = new THREE.Mesh(geometry, material);
 earthGroup.add(earthMesh);
-
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x000000);
-scene.add(hemiLight);
-
 scene.add(earthGroup);
+
+const stars = getStarfield({ numStars: 2000 });
+scene.add(stars);
+
+const sunlight = new THREE.DirectionalLight(0xffffff);
+sunlight.position.set(-2, -0.5, 1.5);
+scene.add(sunlight);
 
 function animate(t = 0) {
   requestAnimationFrame(animate);
@@ -46,3 +50,9 @@ function animate(t = 0) {
 }
 
 animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
